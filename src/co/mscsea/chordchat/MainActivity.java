@@ -114,7 +114,10 @@ public class MainActivity extends ListActivity implements OnClickListener {
 	}
 	
 	private boolean connect() {
-		chordManager = new SchordManager(this);
+		if (chordManager == null) { 
+			chordManager = new SchordManager(this);
+		}
+		
 		List<Integer> interfaceList = chordManager.getAvailableInterfaceTypes();
 		if (interfaceList.isEmpty()) {
 			displayDialog(getString(R.string.no_interface));

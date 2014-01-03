@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">ChordChat</string>
+    <string name="app_name">Chord Chat</string>
     <string name="me">Me:\n%s</string>
     <string name="they">%1$s:\n%2$s</string>
     <string name="has_left">%s has left the party!</string>
