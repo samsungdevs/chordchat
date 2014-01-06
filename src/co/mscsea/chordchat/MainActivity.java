@@ -68,6 +68,7 @@ public class MainActivity extends ListActivity implements OnClickListener {
 		adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1);
 		setListAdapter(adapter);
 		
+		// Initialize chord
 		//<task>
 		Schord chord = new Schord();
 		try {
@@ -111,12 +112,14 @@ public class MainActivity extends ListActivity implements OnClickListener {
 	
 	private boolean connect() {
 		if (chordManager == null) {
+			// Create chord manager
 			//<task>
 			chordManager = new SchordManager(this);
 			//</task>
 		}
 		
 		List<Integer> interfaceList = null;
+		// Get available interfaces
 		//<task>
 		interfaceList = chordManager.getAvailableInterfaceTypes();
 		//</task>
@@ -141,6 +144,7 @@ public class MainActivity extends ListActivity implements OnClickListener {
 	
 	private void disconnect() {
 		if (chordManager != null) {
+			// Close the connection
 			//<task>
 			chordManager.stop();
 			chordManager.close();
@@ -150,6 +154,7 @@ public class MainActivity extends ListActivity implements OnClickListener {
 	}
 	
 	private void joinChannel() {
+		// Join channel
 		//<task>
 		try {
 			chordChannel = chordManager.joinChannel(CHORD_CHANNEL, channelListener);
@@ -164,6 +169,7 @@ public class MainActivity extends ListActivity implements OnClickListener {
 		if (chordChannel != null) {
 			byte[][] bytes = new byte[1][];
 			bytes[0] = text.getBytes();
+			// Send data to all connected nodes
 			//<task>
 			chordChannel.sendDataToAll(CHORD_MESSAGE_TYPE, bytes);
 			//</task>
