@@ -68,12 +68,14 @@ public class MainActivity extends ListActivity implements OnClickListener {
 		adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1);
 		setListAdapter(adapter);
 		
+		//<task>
 		Schord chord = new Schord();
 		try {
 			chord.initialize(this);
 		} catch (SsdkUnsupportedException e) {
 			e.printStackTrace();
 		}
+		//</task>
 	}
 	
 	@Override
@@ -107,40 +109,24 @@ public class MainActivity extends ListActivity implements OnClickListener {
 		}
 	}
 	
-	private void sendMessage(String text) {
-		displayMessage(String.format(getString(R.string.me), text));
-		if (chordChannel != null) {
-			byte[][] bytes = new byte[1][];
-			bytes[0] = text.getBytes();
-			chordChannel.sendDataToAll(CHORD_MESSAGE_TYPE, bytes);
-		}
-	}
-	
-	private void displayMessage(String text) {
-		adapter.add(text);
-		adapter.notifyDataSetChanged();
-	}
-	
-	private void joinChannel() {
-		try {
-			chordChannel = chordManager.joinChannel(CHORD_CHANNEL, channelListener);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
 	private boolean connect() {
-		if (chordManager == null) { 
+		if (chordManager == null) {
+			//<task>
 			chordManager = new SchordManager(this);
+			//</task>
 		}
 		
-		List<Integer> interfaceList = chordManager.getAvailableInterfaceTypes();
+		List<Integer> interfaceList = null;
+		//<task>
+		interfaceList = chordManager.getAvailableInterfaceTypes();
+		//</task>
 		if (interfaceList.isEmpty()) {
 			displayDialog(getString(R.string.no_interface));
 			return false;
 		}
 		
 		// For simplicity we will connect to the first interface available
+		//<task>
 		try {
 			chordManager.start(interfaceList.get(0).intValue(), managerListener);
 		} catch (Exception e) {
@@ -148,16 +134,45 @@ public class MainActivity extends ListActivity implements OnClickListener {
 			displayDialog(getString(R.string.error_start_network));
 			return false;
 		}
+		//</task>
 		
 		return true;
 	}
 	
 	private void disconnect() {
 		if (chordManager != null) {
+			//<task>
 			chordManager.stop();
 			chordManager.close();
+			//</task>
 			chordManager = null;
 		}
+	}
+	
+	private void joinChannel() {
+		//<task>
+		try {
+			chordChannel = chordManager.joinChannel(CHORD_CHANNEL, channelListener);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		//</task>
+	}
+	
+	private void sendMessage(String text) {
+		displayMessage(String.format(getString(R.string.me), text));
+		if (chordChannel != null) {
+			byte[][] bytes = new byte[1][];
+			bytes[0] = text.getBytes();
+			//<task>
+			chordChannel.sendDataToAll(CHORD_MESSAGE_TYPE, bytes);
+			//</task>
+		}
+	}
+	
+	private void displayMessage(String text) {
+		adapter.add(text);
+		adapter.notifyDataSetChanged();
 	}
 	
 	private void updateConnectionState(boolean connected) {
