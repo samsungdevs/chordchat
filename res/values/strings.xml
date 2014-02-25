@@ -2,16 +2,24 @@
 <resources>
 
     <string name="app_name">Chord Chat</string>
+
     <string name="me">Me:\n%s</string>
     <string name="they">%1$s:\n%2$s</string>
     <string name="has_left">%s has left the party!</string>
-    <string name="has_joined">%s has joined the party!!</string>
+    <string name="has_joined">%s is in the house!!</string>
+    <string name="no_data">No data</string>
+    <string name="no_interface">There\'s no network interface available!\nPlease connect your devices on the same network.\nYou can connect to:\n- Wi-Fi Network\n- Wi-Fi Direct\n- Wi-Fi AP (Hotspot)</string>
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
+    <string name="input_username">What\'s your name?</string>
+    
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
     <string name="connect">Connect</string>
     <string name="disconnect">Disconnect</string>
     <string name="send">Send</string>
-    <string name="no_data">No data</string>
-    <string name="no_interface">There\'s no network interface available!\nPlease connect your devices on the same network.\nYou can connect to:\n- Wi-Fi Network\n- Wi-Fi Direct\n- Wi-Fi AP (Hotspot)</string>
+    
     <string name="error_start_network">Unable to connect to the network interface</string>
-    <string name="ok">OK</string>
+    <string name="error_empty_username">Username must have at least 1 character!</string>
 
 </resources>
