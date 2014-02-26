@@ -287,5 +287,19 @@ public class NetworkService extends Service {
 				listener.onFileChunkReceived(fromNode, fromChannel, fileName, hash, fileType, exchangeId, fileSize, offset);
 			}
 		}
+		
+		@Override
+		public void onUdpDataDelivered(String toNode, String toChannel, String reqId) {
+			for (SchordChannel.StatusListener listener : mChannelListeners) {
+				listener.onUdpDataDelivered(toNode, toChannel, reqId);
+			}
+		}
+
+		@Override
+		public void onUdpDataReceived(String fromNode, String fromChannel, String payloadType, byte[][] payload, String sessionName) {
+			for (SchordChannel.StatusListener listener : mChannelListeners) {
+				listener.onUdpDataReceived(fromNode, fromChannel, payloadType, payload, sessionName);
+			}
+		}
 	};
 }

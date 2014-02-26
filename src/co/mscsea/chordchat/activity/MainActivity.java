@@ -265,19 +265,19 @@ public class MainActivity extends Activity {
 		builder.show();
 	}
 	
-	public boolean sendData(String nodeId, String type, String data) {
+	public boolean sendData(String toNode, String type, String data) {
 		SchordChannel channel = mNetworkService.getChannel();
 		if (channel == null) return false;
 		
 		byte[][] bytes = new byte[1][];
 		bytes[0] = data.getBytes();
-		// Send data to the destination node specified by nodeId.
-		// Data will be sent to all connected nodes if nodeId is null.
+		// Send data to the destination node specified by toNode.
+		// Data will be sent to all connected nodes if toNode is null.
 		//<task>
-		if (nodeId == null) {
+		if (toNode == null) {
 			channel.sendDataToAll(type, bytes);
 		} else {
-			channel.sendData(nodeId, type, bytes);
+			channel.sendData(toNode, type, bytes);
 		}
 		//</task>
 		
@@ -294,8 +294,8 @@ public class MainActivity extends Activity {
 		}
 	}
 	
-	public void sendUsername(String nodeId, String username) {
-		sendData(nodeId, NetworkService.CHORD_TYPE_USERNAME, username);
+	public void sendUsername(String toNode, String username) {
+		sendData(toNode, NetworkService.CHORD_TYPE_USERNAME, username);
 	}
 	
 	private SchordManager.StatusListener mManagerListener = new SchordManager.StatusListener() {
@@ -431,6 +431,16 @@ public class MainActivity extends Activity {
 		
 		@Override
 		public void onFileChunkReceived(String fromNode, String fromChannel, String fileName, String hash, String fileType, String exchangeId, long fileSize, long offset) {
+			
+		}
+
+		@Override
+		public void onUdpDataDelivered(String toNode, String toChannel, String reqId) {
+			
+		}
+
+		@Override
+		public void onUdpDataReceived(String fromNode, String fromChannel, String payloadType, byte[][] payload, String sessionName) {
 			
 		}
 	};
