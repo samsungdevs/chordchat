@@ -15,33 +15,34 @@ import co.mscsea.chordchat.activity.MainActivity;
 import co.mscsea.chordchat.app.App;
 
 public class ChatFragment extends ListFragment implements OnClickListener {
-	
+
 	private ArrayAdapter<String> mAdapter;
 	private Button mSendButton;
 	private EditText mMessageEditor;
-	
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 	}
-	
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.fragment_chat, container, false);
-	
+
 		App app = (App) getActivity().getApplication();
-		
-		mAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, android.R.id.text1, app.getChatMessageList());
+
+		mAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, android.R.id.text1,
+				app.getChatMessageList());
 		setListAdapter(mAdapter);
-		
+
 		mSendButton = (Button) rootView.findViewById(R.id.send);
 		mSendButton.setOnClickListener(this);
-		
+
 		mMessageEditor = (EditText) rootView.findViewById(R.id.message);
-		
+
 		return rootView;
 	}
-	
+
 	public void displayMessage(String message) {
 		mAdapter.notifyDataSetChanged();
 	}
@@ -56,7 +57,7 @@ public class ChatFragment extends ListFragment implements OnClickListener {
 			}
 		}
 	}
-	
+
 	public void setSendButtonEnabled(boolean enabled) {
 		mSendButton.setEnabled(enabled);
 	}
