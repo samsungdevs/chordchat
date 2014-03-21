@@ -16,24 +16,25 @@
 
 package co.mscsea.chordchat.activity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.Spinner;
 import co.mscsea.chordchat.R;
 import co.mscsea.chordchat.app.App;
 import co.mscsea.chordchat.app.NetworkService;
@@ -51,7 +52,6 @@ public class MainActivity extends Activity {
 	private ChatFragment mChatFragment;
 	private UserListFragment mUserListFragment;
 
-	private boolean mIsServiceBound = false;
 	private NetworkService mNetworkService;
 	private boolean mIsBackKeyPressed = false;
 
@@ -83,8 +83,13 @@ public class MainActivity extends Activity {
 		mChatFragment = (ChatFragment) getFragmentManager().findFragmentById(R.id.chat_fragment);
 		mUserListFragment = (UserListFragment) getFragmentManager().findFragmentById(R.id.drawer_fragment);
 
-		Intent intent = new Intent(this, NetworkService.class);
-		bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
+		mNetworkService = ((App) getApplication()).getNetworkService();
+		mNetworkService.addChannelListener(mChannelListener);
+		mNetworkService.addManagerListener(mManagerListener);
+
+		if (mNetworkService.getState() == ConnectionState.CONNECTED) {
+			mChatFragment.setSendButtonEnabled(true);
+		}
 	}
 
 	@Override
@@ -112,14 +117,14 @@ public class MainActivity extends Activity {
 		}
 
 		switch (item.getItemId()) {
-		case R.id.action_connect: {
-			askForUsername();
-			return true;
-		}
-		case R.id.action_disconnect: {
-			disconnect();
-			return true;
-		}
+			case R.id.action_connect: {
+				displayConnectDialog();
+				return true;
+			}
+			case R.id.action_disconnect: {
+				disconnect();
+				return true;
+			}
 		}
 
 		return super.onOptionsItemSelected(item);
@@ -138,10 +143,6 @@ public class MainActivity extends Activity {
 
 		mNetworkService.removeChannelListener(mChannelListener);
 		mNetworkService.removeManagerListener(mManagerListener);
-
-		if (mIsServiceBound) {
-			unbindService(mServiceConnection);
-		}
 	}
 
 	@Override
@@ -150,31 +151,6 @@ public class MainActivity extends Activity {
 
 		mIsBackKeyPressed = true;
 	}
-
-	private ServiceConnection mServiceConnection = new ServiceConnection() {
-
-		@Override
-		public void onServiceDisconnected(ComponentName componentName) {
-			mNetworkService = null;
-			mIsServiceBound = false;
-
-			mNetworkService.removeChannelListener(mChannelListener);
-			mNetworkService.removeManagerListener(mManagerListener);
-			
-			invalidateOptionsMenu();
-		}
-
-		@Override
-		public void onServiceConnected(ComponentName componentName, IBinder binder) {
-			mNetworkService = ((NetworkService.MyBinder) binder).getService();
-			mIsServiceBound = true;
-
-			mNetworkService.addChannelListener(mChannelListener);
-			mNetworkService.addManagerListener(mManagerListener);
-			
-			invalidateOptionsMenu();
-		}
-	};
 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
@@ -185,7 +161,7 @@ public class MainActivity extends Activity {
 		if (mNetworkService != null) {
 			state = mNetworkService.getState();
 		}
-		
+
 		switch (state) {
 			case CONNECTED: {
 				itemConnect.setVisible(false);
@@ -231,11 +207,13 @@ public class MainActivity extends Activity {
 		dialog.show();
 	}
 
-	private void connect() {
+	private void connect(int networkInterface) {
 		((App) getApplication()).clearChatData();
 		((App) getApplication()).removeAllChatUsers();
 		mChatFragment.setSendButtonEnabled(true);
-		mNetworkService.connect();
+		if (mNetworkService.connect(networkInterface) == NetworkService.ERROR_CONNECT_INVALID_INTERFACE) {
+			displayDialog(getString(R.string.error_start_network));
+		}
 		invalidateOptionsMenu();
 	}
 
@@ -245,21 +223,58 @@ public class MainActivity extends Activity {
 		invalidateOptionsMenu();
 	}
 
-	private void askForUsername() {
+	private void displayConnectDialog() {
+		List<String> availableInterfaceNames = new ArrayList<String>();
+		List<Integer> availableInterfaces = null;
+		boolean isInterfaceAvailable = false;
+		SchordManager chordManager = mNetworkService.getManager();
+		if (chordManager != null) {
+			 // TODO: Get available interfaces
+			 // <task>
+			availableInterfaces = chordManager.getAvailableInterfaceTypes();
+			// </task>
+			if (availableInterfaces != null && !availableInterfaces.isEmpty()) {
+				isInterfaceAvailable = true;
+				for (Integer networkInterface : availableInterfaces) {
+					if (networkInterface == SchordManager.INTERFACE_TYPE_WIFI) {
+						availableInterfaceNames.add(getString(R.string.wifi));
+					} else if (networkInterface == SchordManager.INTERFACE_TYPE_WIFI_AP) {
+						availableInterfaceNames.add(getString(R.string.wifiap));
+					} else if (networkInterface == SchordManager.INTERFACE_TYPE_WIFI_P2P) {
+						availableInterfaceNames.add(getString(R.string.wifip2p));
+					}
+				}
+			}
+		}
+		
+		if (!isInterfaceAvailable) {
+			displayDialog(getString(R.string.no_interface));
+			return;
+		}
+		
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle(getString(R.string.input_username));
+		builder.setTitle(getString(R.string.connect));
 
-		final EditText input = new EditText(this);
+		View view = LayoutInflater.from(this).inflate(R.layout.dialog_connect, null);
+		
+		final EditText input = (EditText) view.findViewById(R.id.name);
 		input.setText(((App) getApplication()).getUsername());
-		builder.setView(input);
+		
+		final Spinner connectionList = (Spinner) view.findViewById(R.id.connections);
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.simple_list_item, availableInterfaceNames);
+		connectionList.setAdapter(adapter);
+		
+		builder.setView(view);
 
+		final List<Integer> networkInterfaces = availableInterfaces;
 		builder.setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				String username = input.getText().toString();
 				if (username.trim().length() > 0) {
 					((App) getApplication()).setUsername(username);
-					connect();
+					int networkInterface = networkInterfaces.get(connectionList.getSelectedItemPosition());
+					connect(networkInterface);
 				} else {
 					displayDialog(getString(R.string.error_empty_username));
 				}
@@ -283,7 +298,7 @@ public class MainActivity extends Activity {
 
 		byte[][] bytes = new byte[1][];
 		bytes[0] = data.getBytes();
-		// Send data to the destination node specified by toNode.
+		// TODO: Send data to the destination node specified by toNode.
 		// Data will be sent to all connected nodes if toNode is null.
 		// <task>
 		if (toNode == null) {

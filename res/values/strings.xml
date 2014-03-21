@@ -8,10 +8,14 @@
     <string name="has_left">%s has left the party!</string>
     <string name="has_joined">%s is in the house!!</string>
     <string name="no_data">No data</string>
-    <string name="no_interface">There\'s no network interface available!\nPlease connect your devices on the same network.\nYou can connect to:\n- Wi-Fi Network\n- Wi-Fi Direct\n- Wi-Fi AP (Hotspot)</string>
+    <string name="no_interface">No network interface available!\nPlease connect your devices on the same network.\nYou can connect to:\n- Wi-Fi Network\n- Wi-Fi Direct\n- Wi-Fi AP (Hotspot)</string>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
     <string name="input_username">What\'s your name?</string>
+    <string name="connection_list">Choose network interface</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="wifiap">Wi-Fi AP</string>
+    <string name="wifip2p">Wi-Fi Direct</string>
     
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>

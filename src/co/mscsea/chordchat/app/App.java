@@ -4,15 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import android.app.Application;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
-import android.os.IBinder;
 
 public class App extends Application {
 
-	private boolean mIsServiceBound = false;
 	private NetworkService mNetworkService;
 	private ArrayList<String> mChatMessageList = new ArrayList<String>();
 	private ArrayList<String> mChatUserList = new ArrayList<String>();
@@ -23,34 +17,20 @@ public class App extends Application {
 	public void onCreate() {
 		super.onCreate();
 
-		Intent intent = new Intent(this, NetworkService.class);
-		bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
+		mNetworkService = new NetworkService(this);
 	}
 
 	@Override
 	public void onTerminate() {
 		super.onTerminate();
 
-		if (mIsServiceBound) {
-			mNetworkService.destroy();
-			unbindService(mServiceConnection);
-		}
+		mNetworkService.disconnect();
+		mNetworkService = null;
 	}
-
-	private ServiceConnection mServiceConnection = new ServiceConnection() {
-
-		@Override
-		public void onServiceDisconnected(ComponentName componentName) {
-			mNetworkService = null;
-			mIsServiceBound = false;
-		}
-
-		@Override
-		public void onServiceConnected(ComponentName componentName, IBinder binder) {
-			mNetworkService = ((NetworkService.MyBinder) binder).getService();
-			mIsServiceBound = true;
-		}
-	};
+	
+	public NetworkService getNetworkService() {
+		return mNetworkService;
+	}
 
 	public ArrayList<String> getChatMessageList() {
 		return mChatMessageList;

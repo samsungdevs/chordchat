@@ -39,6 +39,7 @@
             android:layout_height="match_parent"
             android:layout_alignParentRight="true"
             android:minWidth="@dimen/chatbox_height"
+            android:enabled="false"
             android:text="@string/send" />
     </RelativeLayout>
 

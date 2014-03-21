@@ -1,29 +1,27 @@
 package co.mscsea.chordchat.app;
 
 import java.util.ArrayList;
-import java.util.List;
 
-import android.app.Service;
-import android.content.Intent;
-import android.os.Binder;
-import android.os.IBinder;
+import android.content.Context;
 
 import com.samsung.android.sdk.SsdkUnsupportedException;
 import com.samsung.android.sdk.chord.Schord;
 import com.samsung.android.sdk.chord.SchordChannel;
 import com.samsung.android.sdk.chord.SchordManager;
 
-public class NetworkService extends Service {
+public class NetworkService {
 
 	public static final String CHORD_CHANNEL = "co.mscsea.chordchat.channel";
 	public static final String CHORD_TYPE_MESSAGE = "co.mscsea.chordchat.type.message";
 	public static final String CHORD_TYPE_USERNAME = "co.mscsea.chordchat.type.username";
+	
+	public static final int OK = 0;
+	public static final int ERROR_CONNECT_ALREADY_CONNECTED = 1;
+	public static final int ERROR_CONNECT_INVALID_INTERFACE = 2;
 
 	public enum ConnectionState {
 		CONNECTED, CONNECTING, DISCONNECTED
 	}
-
-	private final IBinder mBinder = new MyBinder();
 
 	private ConnectionState mConnectionState = ConnectionState.DISCONNECTED;
 	private boolean mIsInitialized = false;
@@ -32,16 +30,13 @@ public class NetworkService extends Service {
 	private SchordChannel mChordChannel;
 	private ArrayList<SchordManager.StatusListener> mManagerListeners = new ArrayList<SchordManager.StatusListener>();
 	private ArrayList<SchordChannel.StatusListener> mChannelListeners = new ArrayList<SchordChannel.StatusListener>();
-
-	@Override
-	public IBinder onBind(Intent arg0) {
-		return mBinder;
-	}
-
-	public class MyBinder extends Binder {
-		public NetworkService getService() {
-			return NetworkService.this;
-		}
+	private ArrayList<SchordManager.NetworkListener> mNetworkListeners = new ArrayList<SchordManager.NetworkListener>();
+	private Context mContext;
+	
+	public NetworkService(Context context) {
+		mContext = context;
+		
+		initialize(mContext);
 	}
 
 	public void addManagerListener(SchordManager.StatusListener listener) {
@@ -59,62 +54,60 @@ public class NetworkService extends Service {
 	public void removeChannelListener(SchordChannel.StatusListener listener) {
 		mChannelListeners.remove(listener);
 	}
+	
+	public void addNetworkListener(SchordManager.NetworkListener listener) {
+		mNetworkListeners.add(listener);
+	}
+	
+	public void removeNetworkListener(SchordManager.NetworkListener listener) {
+		mNetworkListeners.remove(listener);
+	}
 
-	private void initialize() {
+	private void initialize(Context context) {
 		if (mIsInitialized)
 			return;
 
+		// TODO: Intialize Chord
 		// <task>
 		Schord chord = new Schord();
 		try {
-			chord.initialize(this);
+			chord.initialize(context);
 		} catch (SsdkUnsupportedException e) {
 			e.printStackTrace();
 		}
 		// </task>
+		
+		// TODO: Create chord manager
+		// <task>
+		mChordManager = new SchordManager(mContext);
+		mChordManager.setLooper(mContext.getMainLooper());
+		mChordManager.setNetworkListener(networkListener);
+		// </task>
 	}
 
-	public void connect() {
+	public int connect(int networkInterface) {
 		if (mConnectionState != ConnectionState.DISCONNECTED)
-			return;
+			return ERROR_CONNECT_ALREADY_CONNECTED;
 
 		mConnectionState = ConnectionState.CONNECTING;
 
-		initialize();
-
-		if (mChordManager == null) {
-			// Create chord manager
-			// <task>
-			mChordManager = new SchordManager(this);
-			mChordManager.setLooper(getApplication().getMainLooper());
-			// </task>
-		}
-
-		List<Integer> interfaceList = null;
-		// Get available interfaces
-		// <task>
-		interfaceList = mChordManager.getAvailableInterfaceTypes();
-		// </task>
-		if (interfaceList.isEmpty()) {
-			disconnect();
-			return;
-		}
-
-		// For simplicity we will connect to the first interface available
+		// TODO: Connect to the network interface
 		// <task>
 		try {
-			mChordManager.start(interfaceList.get(0).intValue(), managerListener);
+			mChordManager.start(networkInterface, managerListener);
 		} catch (Exception e) {
 			e.printStackTrace();
 			disconnect();
-			return;
+			return ERROR_CONNECT_INVALID_INTERFACE;
 		}
 		// </task>
+		
+		return OK;
 	}
 
 	public void disconnect() {
 		if (mChordManager != null) {
-			// Stop the connection
+			// TODO: Stop the connection
 			// <task>
 			mChordManager.stop();
 			// </task>
@@ -124,7 +117,7 @@ public class NetworkService extends Service {
 	}
 
 	private void joinChannel() {
-		// Join channel
+		// TODO: Join channel
 		// <task>
 		try {
 			mChordChannel = mChordManager.joinChannel(CHORD_CHANNEL, channelListener);
@@ -134,6 +127,10 @@ public class NetworkService extends Service {
 			disconnect();
 		}
 		// </task>
+	}
+	
+	public SchordManager getManager() {
+		return mChordManager;
 	}
 
 	public SchordChannel getChannel() {
@@ -145,13 +142,30 @@ public class NetworkService extends Service {
 	}
 
 	public void destroy() {
-		// Stop the connection
+		// TODO: Stop the connection
 		// <task>
 		if (mChordManager != null) {
 			mChordManager.close();
 		}
 		// </task>
 	}
+	
+	private SchordManager.NetworkListener networkListener = new SchordManager.NetworkListener() {
+		
+		@Override
+		public void onDisconnected(int interfaceType) {
+			for (SchordManager.NetworkListener listener : mNetworkListeners) {
+				listener.onDisconnected(interfaceType);
+			}
+		}
+		
+		@Override
+		public void onConnected(int interfaceType) {
+			for (SchordManager.NetworkListener listener : mNetworkListeners) {
+				listener.onConnected(interfaceType);
+			}
+		}
+	};
 
 	private SchordManager.StatusListener managerListener = new SchordManager.StatusListener() {
 

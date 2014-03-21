@@ -7,5 +7,13 @@
     <dimen name="drawer_width">240dp</dimen>
     <dimen name="chatbox_height">48dp</dimen>
     <dimen name="drawer_shadow_width">8dp</dimen>
+    
+    <dimen name="padding">8dp</dimen>
+    <dimen name="padding_large">16dp</dimen>
+    
+    <dimen name="font_small">10sp</dimen>
+    <dimen name="font_normal">12sp</dimen>
+    <dimen name="font_large">15sp</dimen>
+    <dimen name="font_xlarge">20sp</dimen>
 
 </resources>
