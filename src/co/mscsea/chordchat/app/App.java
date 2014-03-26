@@ -19,21 +19,36 @@ package co.mscsea.chordchat.app;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.samsung.android.sdk.groupplay.Sgp;
+import com.samsung.android.sdk.groupplay.SgpGroupPlay;
+import com.samsung.android.sdk.groupplay.SgpGroupPlay.SgpConnectionStatusListener;
+
 import android.app.Application;
 
-public class App extends Application {
+public class App extends Application implements SgpConnectionStatusListener {
 
 	private NetworkService mNetworkService;
 	private ArrayList<String> mChatMessageList = new ArrayList<String>();
 	private ArrayList<String> mChatUserList = new ArrayList<String>();
 	private HashMap<String, String> mUserMap = new HashMap<String, String>();
 	private String mUsername = "";
+	
+	private Sgp sgp;
+	private SgpGroupPlay sdk;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
 
 		mNetworkService = new NetworkService(this);
+		
+		sgp = new Sgp();
+		try {
+			sgp.initialize(getApplicationContext());
+			new SgpGroupPlay(this).start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -46,6 +61,10 @@ public class App extends Application {
 	
 	public NetworkService getNetworkService() {
 		return mNetworkService;
+	}
+	
+	public SgpGroupPlay getGroupPlay() {
+		return sdk;
 	}
 
 	public ArrayList<String> getChatMessageList() {
@@ -100,5 +119,21 @@ public class App extends Application {
 	public String getUsername(String nodeId) {
 		String username = mUserMap.get(nodeId);
 		return username != null ? username : "";
+	}
+
+	@Override
+	public void onConnected(SgpGroupPlay sdk) {
+		this.sdk = sdk;
+		if (sdk.hasSession()) {
+			sdk.setParticipantInfo(true);
+		}
+	}
+
+	@Override
+	public void onDisconnected() {
+		if (sdk != null) {
+			sdk.setParticipantInfo(false);
+			sdk = null;
+		}
 	}
 }

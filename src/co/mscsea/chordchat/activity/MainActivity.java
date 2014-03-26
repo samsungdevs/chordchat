@@ -44,6 +44,7 @@ import co.mscsea.chordchat.fragment.UserListFragment;
 
 import com.samsung.android.sdk.chord.SchordChannel;
 import com.samsung.android.sdk.chord.SchordManager;
+import com.samsung.android.sdk.groupplay.SgpGroupPlay;
 
 public class MainActivity extends Activity {
 
@@ -53,6 +54,7 @@ public class MainActivity extends Activity {
 	private UserListFragment mUserListFragment;
 
 	private NetworkService mNetworkService;
+	private SgpGroupPlay mGroupPlay;
 	private boolean mIsBackKeyPressed = false;
 
 	@Override
@@ -86,6 +88,11 @@ public class MainActivity extends Activity {
 		mNetworkService = ((App) getApplication()).getNetworkService();
 		mNetworkService.addChannelListener(mChannelListener);
 		mNetworkService.addManagerListener(mManagerListener);
+		
+		mGroupPlay = ((App) getApplication()).getGroupPlay();
+		if (mGroupPlay != null && mGroupPlay.hasSession()) {
+			mGroupPlay.setParticipantInfo(true);
+		}
 
 		if (mNetworkService.getState() == ConnectionState.CONNECTED) {
 			mChatFragment.setSendButtonEnabled(true);
@@ -139,6 +146,10 @@ public class MainActivity extends Activity {
 			((App) getApplication()).removeAllChatUsers();
 			((App) getApplication()).setUsername("");
 			mNetworkService.disconnect();
+			
+			if (mGroupPlay != null && mGroupPlay.hasSession()) {
+				mGroupPlay.setParticipantInfo(false);
+			}
 		}
 
 		mNetworkService.removeChannelListener(mChannelListener);
