@@ -83,7 +83,7 @@ public class NetworkService {
 		if (mIsInitialized)
 			return;
 
-		// TODO: Intialize Chord
+		// TODO: Initialize Chord
 		// <task>
 		Schord chord = new Schord();
 		try {
