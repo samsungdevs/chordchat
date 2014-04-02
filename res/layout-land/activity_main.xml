@@ -1,0 +1,28 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <fragment
+        android:id="@+id/chat_fragment"
+        android:name="co.mscsea.chordchat.fragment.ChatFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_toRightOf="@+id/drawer_fragment" />
+
+    <ImageView
+        android:id="@+id/drawer_shadow"
+        android:layout_width="@dimen/drawer_shadow_width"
+        android:layout_height="match_parent"
+        android:layout_toRightOf="@+id/drawer_fragment"
+        android:scaleType="fitXY"
+        android:src="@drawable/drawer_shadow" />
+
+    <fragment
+        android:id="@+id/drawer_fragment"
+        android:name="co.mscsea.chordchat.fragment.UserListFragment"
+        android:layout_width="@dimen/drawer_width"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true" />
+
+</RelativeLayout>
