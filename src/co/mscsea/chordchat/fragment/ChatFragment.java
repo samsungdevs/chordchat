@@ -77,4 +77,8 @@ public class ChatFragment extends ListFragment implements OnClickListener {
 	public void setSendButtonEnabled(boolean enabled) {
 		mSendButton.setEnabled(enabled);
 	}
+	
+	public void notifyDatSetChanged() {
+		mAdapter.notifyDataSetChanged();
+	}
 }

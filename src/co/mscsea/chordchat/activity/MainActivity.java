@@ -44,6 +44,7 @@ import co.mscsea.chordchat.fragment.UserListFragment;
 
 import com.samsung.android.sdk.chord.SchordChannel;
 import com.samsung.android.sdk.chord.SchordManager;
+import com.samsung.android.sdk.chord.SchordManager.NetworkListener;
 import com.samsung.android.sdk.groupplay.SgpGroupPlay;
 
 public class MainActivity extends Activity {
@@ -88,6 +89,7 @@ public class MainActivity extends Activity {
 		mNetworkService = ((App) getApplication()).getNetworkService();
 		mNetworkService.addChannelListener(mChannelListener);
 		mNetworkService.addManagerListener(mManagerListener);
+		mNetworkService.addNetworkListener(mNetworkListener);
 		
 		mGroupPlay = ((App) getApplication()).getGroupPlay();
 		if (mGroupPlay != null && mGroupPlay.hasSession()) {
@@ -222,10 +224,13 @@ public class MainActivity extends Activity {
 		((App) getApplication()).clearChatData();
 		((App) getApplication()).removeAllChatUsers();
 		mChatFragment.setSendButtonEnabled(true);
+		mChatFragment.notifyDatSetChanged();
+		mUserListFragment.notifyDataSetChanged();
+		invalidateOptionsMenu();
+		
 		if (mNetworkService.connect(networkInterface) == NetworkService.ERROR_CONNECT_INVALID_INTERFACE) {
 			displayDialog(getString(R.string.error_start_network));
 		}
-		invalidateOptionsMenu();
 	}
 
 	private void disconnect() {
@@ -335,12 +340,27 @@ public class MainActivity extends Activity {
 	public void sendUsername(String toNode, String username) {
 		sendData(toNode, NetworkService.CHORD_TYPE_USERNAME, username);
 	}
+	
+	private NetworkListener mNetworkListener = new NetworkListener() {
+		
+		@Override
+		public void onDisconnected(int interfaceType) {
+			mChatFragment.setSendButtonEnabled(false);
+			invalidateOptionsMenu();
+		}
+		
+		@Override
+		public void onConnected(int interfaceType) {
+			invalidateOptionsMenu();
+		}
+	};
 
 	private SchordManager.StatusListener mManagerListener = new SchordManager.StatusListener() {
 
 		@Override
 		public void onStopped(int reason) {
 			if (reason == STOPPED_BY_USER) {
+				mChatFragment.setSendButtonEnabled(false);
 				invalidateOptionsMenu();
 			}
 		}
@@ -364,7 +384,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void run() {
 				((App) getApplication()).addChatUser(id, username);
-				mUserListFragment.refreshUserList();
+				mUserListFragment.notifyDataSetChanged();
 			}
 		});
 	}
@@ -375,7 +395,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void run() {
 				((App) getApplication()).removeChatUser(id);
-				mUserListFragment.refreshUserList();
+				mUserListFragment.notifyDataSetChanged();
 			}
 		});
 	}

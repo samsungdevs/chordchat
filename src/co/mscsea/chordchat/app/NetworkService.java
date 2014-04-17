@@ -170,6 +170,8 @@ public class NetworkService {
 		
 		@Override
 		public void onDisconnected(int interfaceType) {
+			disconnect();
+			
 			for (SchordManager.NetworkListener listener : mNetworkListeners) {
 				listener.onDisconnected(interfaceType);
 			}
@@ -187,6 +189,8 @@ public class NetworkService {
 
 		@Override
 		public void onStopped(int reason) {
+			disconnect();
+			
 			for (SchordManager.StatusListener listener : mManagerListeners) {
 				listener.onStopped(reason);
 			}

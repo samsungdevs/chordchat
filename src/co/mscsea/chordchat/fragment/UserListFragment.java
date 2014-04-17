@@ -49,7 +49,7 @@ public class UserListFragment extends ListFragment {
 		return rootView;
 	}
 
-	public void refreshUserList() {
+	public void notifyDataSetChanged() {
 		mAdapter.notifyDataSetChanged();
 	}
 }
